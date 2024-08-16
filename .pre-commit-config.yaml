@@ -1,0 +1,30 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0  # 최신 버전으로 갱신 가능
+    hooks:
+      - id: trailing-whitespace  # 파일 끝이나 라인 끝에 있는 불필요한 공백 제거
+      - id: end-of-file-fixer  # 파일의 끝에 빈 줄이 없으면 추가
+      - id: check-yaml  # YAML 파일 구문 검사
+      - id: check-added-large-files  # 너무 큰 파일이 Git에 추가되지 않도록 방지
+      - id: detect-private-key  # 민감한 정보(예: SSH 키)가 푸시되지 않도록 방지
+
+  - repo: https://github.com/psf/black
+    rev: 23.7.0  # 최신 버전으로 갱신 가능
+    hooks:
+      - id: black  # 코드 포매터로, PEP 8에 맞게 코드를 자동으로 정리
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.1.0  # 최신 버전으로 갱신 가능
+    hooks:
+      - id: flake8  # 파이썬 코드 린터로, 코드에서 스타일 및 잠재적인 오류 검사
+        additional_dependencies: [fastapi, pydantic]  # FastAPI와 관련된 린트 검사도 반영
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.5.1  # 최신 버전으로 갱신 가능
+    hooks:
+      - id: mypy  # 정적 타입 검사로, FastAPI 코드의 타입 힌트를 검사
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0  # 최신 버전으로 갱신 가능
+    hooks:
+      - id: debug-statements  # 푸시 전에 남아있는 print()와 같은 디버그 문을 제거
