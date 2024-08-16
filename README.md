@@ -5,5 +5,5 @@ source cloudbread/bin/activate
 ```
 
 ```bash
-pre-commit run --all-files
+git ls-files | grep -v '^cloudbread/' | xargs pre-commit run --files
 ```
