@@ -1,14 +1,18 @@
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from typing import List
-
-from . import crud, models, schemas
+from . import crud
+from . import models
+from . import schemas
 from .database import SessionLocal, engine
 
+# 데이터베이스 초기화 (테이블 생성)
 models.Base.metadata.create_all(bind=engine)
 
+app = FastAPI()
 
-# Dependency
+
+# 의존성 주입: 각 요청마다 데이터베이스 세션을 생성하고 종료
 def get_db():
     db = SessionLocal()
     try:
@@ -17,26 +21,17 @@ def get_db():
         db.close()
 
 
-app = FastAPI()
-
-# Database dependency
-# Assume that you have a function `get_db()` defined elsewhere which provides the `db` session
-# e.g., db: Session = Depends(get_db)
-
-# ----------------------------------------
-# Agency Endpoints
-# ----------------------------------------
+# Agency 엔드포인트
 
 
-@app.get("/")
-def read_fastapi(db: Session = Depends(get_db)):
-    return {"status": "success", "message": "Hello World"}
+@app.get("/agencies/", response_model=List[schemas.Agency])
+def read_agencies(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    return crud.get_agencies(db, skip=skip, limit=limit)
 
 
-@app.get("/agencies/", response_model=list[schemas.Agency])
-def read_agencies(db: Session = Depends(get_db)):
-    agencies = crud.get_agencies(db)
-    return agencies
+@app.get("/agencies/{agency_id}", response_model=schemas.Agency)
+def read_agency(agency_id: int, db: Session = Depends(get_db)):
+    return crud.get_agency(db, agency_id=agency_id)
 
 
 @app.post("/agencies/", response_model=schemas.Agency)
@@ -44,31 +39,22 @@ def create_agency(agency: schemas.AgencyCreate, db: Session = Depends(get_db)):
     return crud.create_agency(db=db, agency=agency)
 
 
-@app.get("/agencies/{id}", response_model=schemas.Agency)
-def read_agency(id: int, db: Session = Depends(get_db)):
-    agency = crud.get_agency(db, agency_id=id)
-    if agency is None:
-        raise HTTPException(status_code=404, detail="Agency not found")
-    return agency
+@app.delete("/agencies/{agency_id}", response_model=schemas.Agency)
+def delete_agency(agency_id: int, db: Session = Depends(get_db)):
+    return crud.delete_agency(db=db, agency_id=agency_id)
 
 
-@app.delete("/agencies/{id}", response_model=schemas.Agency)
-def delete_agency(id: int, db: Session = Depends(get_db)):
-    agency = crud.delete_agency(db, agency_id=id)
-    if agency is None:
-        raise HTTPException(status_code=404, detail="Agency not found")
-    return agency
-
-
-# ----------------------------------------
-# Member Endpoints
-# ----------------------------------------
+# Member 엔드포인트
 
 
 @app.get("/users/", response_model=List[schemas.Member])
 def read_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    users = crud.get_users(db, skip=skip, limit=limit)
-    return users
+    return crud.get_users(db, skip=skip, limit=limit)
+
+
+@app.get("/users/{user_id}", response_model=schemas.Member)
+def read_user(user_id: int, db: Session = Depends(get_db)):
+    return crud.get_user(db, user_id=user_id)
 
 
 @app.post("/users/", response_model=schemas.Member)
@@ -76,31 +62,22 @@ def create_user(user: schemas.MemberCreate, db: Session = Depends(get_db)):
     return crud.create_user(db=db, user=user)
 
 
-@app.get("/users/{id}", response_model=schemas.Member)
-def read_user(id: int, db: Session = Depends(get_db)):
-    user = crud.get_user(db, user_id=id)
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+@app.delete("/users/{user_id}", response_model=schemas.Member)
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    return crud.delete_user(db=db, user_id=user_id)
 
 
-@app.delete("/users/{id}", response_model=schemas.Member)
-def delete_user(id: int, db: Session = Depends(get_db)):
-    user = crud.delete_user(db, user_id=id)
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
-
-
-# ----------------------------------------
-# Blacklist Endpoints
-# ----------------------------------------
+# Blacklist 엔드포인트
 
 
 @app.get("/blacklists/", response_model=List[schemas.Blacklist])
 def read_blacklists(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    blacklists = crud.get_blacklists(db, skip=skip, limit=limit)
-    return blacklists
+    return crud.get_blacklists(db, skip=skip, limit=limit)
+
+
+@app.get("/blacklists/{blacklist_id}", response_model=schemas.Blacklist)
+def read_blacklist(blacklist_id: int, db: Session = Depends(get_db)):
+    return crud.get_blacklist(db, blacklist_id=blacklist_id)
 
 
 @app.post("/blacklists/", response_model=schemas.Blacklist)
@@ -108,34 +85,24 @@ def create_blacklist(blacklist: schemas.BlacklistCreate, db: Session = Depends(g
     return crud.create_blacklist(db=db, blacklist=blacklist)
 
 
-@app.get("/blacklists/{id}", response_model=schemas.Blacklist)
-def read_blacklist(id: int, db: Session = Depends(get_db)):
-    blacklist = crud.get_blacklist(db, blacklist_id=id)
-    if blacklist is None:
-        raise HTTPException(status_code=404, detail="Blacklist not found")
-    return blacklist
-
-
-@app.put("/blacklists/{id}", response_model=schemas.Blacklist)
+@app.put("/blacklists/{blacklist_id}", response_model=schemas.Blacklist)
 def update_blacklist(
-    id: int, blacklist: schemas.BlacklistCreate, db: Session = Depends(get_db)
+    blacklist_id: int, blacklist: schemas.BlacklistCreate, db: Session = Depends(get_db)
 ):
-    updated_blacklist = crud.update_blacklist(db, blacklist_id=id, blacklist=blacklist)
-
-    if updated_blacklist is None:
-        raise HTTPException(status_code=404, detail="Blacklist not found")
-    return updated_blacklist
+    return crud.update_blacklist(db=db, blacklist_id=blacklist_id, blacklist=blacklist)
 
 
-# ----------------------------------------
-# Report Endpoints
-# ----------------------------------------
+# Report 엔드포인트
 
 
 @app.get("/reports/", response_model=List[schemas.Report])
 def read_reports(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    reports = crud.get_reports(db, skip=skip, limit=limit)
-    return reports
+    return crud.get_reports(db, skip=skip, limit=limit)
+
+
+@app.get("/reports/{report_id}", response_model=schemas.Report)
+def read_report(report_id: int, db: Session = Depends(get_db)):
+    return crud.get_report(db, report_id=report_id)
 
 
 @app.post("/reports/", response_model=schemas.Report)
@@ -143,17 +110,12 @@ def create_report(report: schemas.ReportCreate, db: Session = Depends(get_db)):
     return crud.create_report(db=db, report=report)
 
 
-@app.get("/reports/{id}", response_model=schemas.Report)
-def read_report(id: int, db: Session = Depends(get_db)):
-    report = crud.get_report(db, report_id=id)
-    if report is None:
-        raise HTTPException(status_code=404, detail="Report not found")
-    return report
+@app.delete("/reports/{report_id}", response_model=schemas.Report)
+def delete_report(report_id: int, db: Session = Depends(get_db)):
+    return crud.delete_report(db=db, report_id=report_id)
 
 
-@app.delete("/reports/{id}", response_model=schemas.Report)
-def delete_report(id: int, db: Session = Depends(get_db)):
-    report = crud.delete_report(db, report_id=id)
-    if report is None:
-        raise HTTPException(status_code=404, detail="Report not found")
-    return report
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="127.0.0.1", port=8000)

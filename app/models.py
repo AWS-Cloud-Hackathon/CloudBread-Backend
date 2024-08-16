@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Float
+from sqlalchemy import Column, Integer, DateTime, Float, VARCHAR
 from datetime import datetime
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
@@ -10,10 +10,10 @@ class Agency(Base):
     __tablename__ = "agency"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    name = Column(String, nullable=False)
+    name = Column(VARCHAR(45), nullable=False)
     category = Column(Integer, nullable=False)
-    username = Column(String, unique=True, nullable=False)
-    password = Column(String, nullable=False)
+    username = Column(VARCHAR(45), unique=True, nullable=False)
+    password = Column(VARCHAR(45), nullable=False)
     date_created = Column(DateTime, default=datetime, nullable=False)
     date_modified = Column(
         DateTime, default=datetime, onupdate=datetime, nullable=False
@@ -26,8 +26,8 @@ class Member(Base):
     __tablename__ = "member"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    username = Column(String, unique=True, nullable=False)
-    password = Column(String, nullable=False)
+    username = Column(VARCHAR(45), unique=True, nullable=False)
+    password = Column(VARCHAR(45), nullable=False)
     date_created = Column(DateTime, default=datetime, nullable=False)
     date_modified = Column(
         DateTime, default=datetime, onupdate=datetime, nullable=False
@@ -40,13 +40,13 @@ class Blacklist(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     agency_id = Column(Integer, ForeignKey("agency.id"), nullable=False)
     purpose_id = Column(Integer, nullable=False)
-    target = Column(String, nullable=False)
+    target = Column(VARCHAR(45), nullable=False)
     state = Column(Integer, nullable=False)
     date_start = Column(DateTime, nullable=False)
     date_end = Column(DateTime, nullable=False)
-    car_category = Column(String, nullable=False)
-    car_model = Column(String, nullable=False)
-    car_color = Column(String, nullable=False)
+    car_category = Column(VARCHAR(45), nullable=False)
+    car_model = Column(VARCHAR(45), nullable=False)
+    car_color = Column(VARCHAR(45), nullable=False)
     date_created = Column(DateTime, default=datetime, nullable=False)
     date_modified = Column(
         DateTime, default=datetime, onupdate=datetime, nullable=False
